@@ -10,7 +10,7 @@ import ccxt
 # custom
 from utils import *
 
-DEBUG = True
+DEBUG = False
 
 
 exchange = ccxt.binance({
