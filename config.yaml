@@ -1,0 +1,25 @@
+config:
+  symbols: 
+    - XRP/USDT
+    - DOGE/USDT
+    - DOT/USDT
+    - LINK/USDT
+    - MATIC/USDT
+    - ATOM/USDT
+    - OP/USDT
+    - NEAR/USDT
+    - APT/USDT
+    - ARB/USDT
+    - HBAR/USDT
+    - EGLD/USDT
+    - PYTH/USDT
+    - FTM/USDT
+    - AAVE/USDT
+    - DYDX/USDT
+    - AXS/USDT
+    - OSMO/USDT
+  qty-usdt: 30
+  login: ""
+  apikey: ""
+  apisecret: ""
+  
