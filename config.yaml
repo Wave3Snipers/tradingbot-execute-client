@@ -30,6 +30,7 @@ config:
     - OSMO/USDT
     - TIA/USDT
     - DYM/USDT
+    - MANTA/USDT
   qty-usdt: 0
   login: ""
   ws: ""
