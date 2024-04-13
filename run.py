@@ -12,11 +12,13 @@ from utils import *
 
 DEBUG = False
 
-
-exchange = ccxt.binance({
-    'apiKey': API_KEY,
-    'secret': API_SECRET,
-})
+if DEBUG:
+    exchange = ccxt.binance()
+else:
+    exchange = ccxt.binance({
+        'apiKey': API_KEY,
+        'secret': API_SECRET,
+    })
 
 def retry(func, *args, **kwargs):
     for attempt in range(10):
@@ -101,6 +103,7 @@ async def ws_handler(uri):
             except TimeoutError:
                 await websocket.ping()
 
+
 if __name__ == "__main__":
     logger.info('Starting..')
     bought_coin_qty = load_status()
@@ -108,9 +111,20 @@ if __name__ == "__main__":
     
     while True:
         try: 
-            asyncio.run(ws_handler('wss://host.docker.internal:3000'))
+            asyncio.run(ws_handler(WS))
         except Exception as e:
-            sleep_amount = randrange(20, 70)
-            logger.error(f"Connection failed, retry in {sleep_amount} seconds")
-            logger.error(e)
-            sleep(sleep_amount)
+            sec = randrange(20, 70)
+            if hasattr(e, 'status_code'):
+                if e.status_code == 403:
+                    logger.error('Invalid license')
+                    break
+                if e.status_code == 409:
+                    logger.error('Conflict')
+                    break
+                else:
+                    logger.error(f'Error: {e.status_code}')
+            else:
+                logger.error(f"Connection failed, retry in {sec} seconds")
+                logger.error(e)
+
+            sleep(sec)

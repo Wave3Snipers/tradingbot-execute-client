@@ -18,8 +18,9 @@ config:
     - DYDX/USDT
     - AXS/USDT
     - OSMO/USDT
-  qty-usdt: 30
+  qty-usdt: 15
   login: ""
+  ws: ""
   apikey: ""
   apisecret: ""
   

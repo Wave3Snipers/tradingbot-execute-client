@@ -27,6 +27,7 @@ try:
     API_KEY = config['config']['apikey']
     API_SECRET = config['config']['apisecret']
     AUTHORIZATION = config['config']['login']
+    WS = config['config']['ws']
 except:
     logger.error("Invalid configuration options. Fix config and retry.")
     sys.exit(1)
@@ -40,7 +41,11 @@ if QTY_USDT < 10:
     sys.exit(1)
 
 if len(API_KEY) == 0 or len(API_SECRET) == 0 or len(AUTHORIZATION) == 0:
-    logger.error("Invalid credentials")
+    logger.error("Invalid credentials in config file")
+    sys.exit(1)
+
+if len(WS) == 0:
+    logger.error("Invalid WS server. Fix config and retry")
     sys.exit(1)
     
 logger.info(f'Configured symbols {config_symbols}')
