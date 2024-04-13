@@ -18,7 +18,7 @@ with open("config.yaml", 'r') as stream:
     try:
         config = yaml.safe_load(stream)
     except:
-        logger.error("Unable to log configuration file. Check if it exists and is a valid yaml")
+        logger.error("Unable to load configuration file. Check if it exists and is a valid yaml")
         sys.exit(1)
 
 try:
