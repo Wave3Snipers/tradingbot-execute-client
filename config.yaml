@@ -1,24 +1,36 @@
 config:
   symbols: 
+    - SOL/USDT
+    - SXP/USDT
     - XRP/USDT
+    - ADA/USDT
+    - AVAX/USDT
     - DOGE/USDT
     - DOT/USDT
     - LINK/USDT
     - MATIC/USDT
+    - ICP/USDT
     - ATOM/USDT
+    - FIL/USDT
     - OP/USDT
     - NEAR/USDT
     - APT/USDT
     - ARB/USDT
     - HBAR/USDT
+    - GRT/USDT
+    - SUI/USDT
     - EGLD/USDT
     - PYTH/USDT
+    - WOO/USDT
     - FTM/USDT
     - AAVE/USDT
     - DYDX/USDT
     - AXS/USDT
+    - APE/USDT
     - OSMO/USDT
-  qty-usdt: 15
+    - TIA/USDT
+    - DYM/USDT
+  qty-usdt: 0
   login: ""
   ws: ""
   apikey: ""
