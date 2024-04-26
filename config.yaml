@@ -31,6 +31,7 @@ config:
     - TIA/USDT
     - DYM/USDT
     - MANTA/USDT
+    - JUP/USDT
   qty-usdt: 0
   login: ""
   ws: ""
