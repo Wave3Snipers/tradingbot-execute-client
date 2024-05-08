@@ -5,9 +5,13 @@ services:
     build: .
     image: tradingbot_execute_client
     container_name: tradingbot_execute_client
+    environment:
+      - DEBUG=true
     volumes:
       - ./:/home/docker_volume
     working_dir: /home/docker_volume
-    entrypoint: python run.py
+    entrypoint: tail -f /dev/null
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
  

@@ -70,3 +70,16 @@ def check_stop_buy_file():
 
 def check_stop_buy_allow_dca_file():
     return os.path.exists('stop_allow_dca.txt')
+
+def get_env_var_bool(name: str, default_value: bool | None = None) -> bool:
+    true_ = ('true', '1', 't')
+    false_ = ('false', '0', 'f')
+    value: str | None = os.getenv(name, None)
+    if value is None:
+        if default_value is None:
+            raise ValueError(f'Variable `{name}` not set!')
+        else:
+            value = str(default_value)
+    if value.lower() not in true_ + false_:
+        raise ValueError(f'Invalid value `{value}` for variable `{name}`')
+    return value in true_

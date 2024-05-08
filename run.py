@@ -10,7 +10,7 @@ import ccxt
 # custom
 from utils import *
 
-DEBUG = False
+DEBUG = get_env_var_bool("DEBUG", True)
 
 if DEBUG:
     exchange = ccxt.binance()
@@ -110,8 +110,11 @@ if __name__ == "__main__":
     exchange.fetch_ohlcv('BTC/USDT', '1m')
     
     while True:
-        try: 
-            asyncio.run(ws_handler(WS))
+        try:
+            if DEBUG:
+                asyncio.run(ws_handler('wss://host.docker.internal:3000'))
+            else:
+                asyncio.run(ws_handler(WS))
         except Exception as e:
             sec = randrange(20, 70)
             if hasattr(e, 'status_code'):
