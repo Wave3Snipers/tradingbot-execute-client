@@ -18,7 +18,20 @@ else:
     exchange = ccxt.binance({
         'apiKey': API_KEY,
         'secret': API_SECRET,
+        'enableRateLimit': True
     })
+
+CHECK_MIN_NOTIONAL = False # enable to verify if sell orders are big enough to satisfy the exchange's MIN_NOTIONAL value. Disabled by default as it requires 1 extra network call.
+
+def get_balance(symbol):
+    try:
+        token = symbol.split('/')[0].strip()
+        balance = retry(exchange.fetch_balance)
+        return balance['free'][token]
+    except:
+        logger.error(f"Unable to retrive balance for {symbol}")
+        return None
+
 
 def retry(func, *args, **kwargs):
     for attempt in range(10):
@@ -38,45 +51,54 @@ async def place(is_buy, symbol):
         else:
             logger.info(f"DEBUG - Sell {symbol}")
         return
-    
+
     if is_buy:
         # handle buy
         if check_stop_buy_file():
             logger.error(f'{symbol} Stop detected. Ignoring buy signals.')
             return
-        if check_stop_buy_allow_dca_file():
-            logger.error(f'{symbol} Stop with allow DCA detected.')
-            if symbol not in bought_coin_qty:
-                return
                 
         buy_rcpt = retry(exchange.create_market_buy_order_with_cost, symbol, QTY_USDT)
         if not buy_rcpt:
             logger.error(f'{symbol} Failed to place buy order after all attempts exhausted..')
             return
 
-        if symbol in bought_coin_qty:
-            bought_coin_qty[symbol] = buy_rcpt['filled'] + bought_coin_qty[symbol]
-        else:
-            bought_coin_qty[symbol] = buy_rcpt['filled']
-        
-        logger.info(f"{symbol} Bought {buy_rcpt['filled']}. Total coin amount: {bought_coin_qty[symbol]}" )
+        logger.info(f"{symbol} Bought {buy_rcpt['filled']}." )
     else:
         # handle sell
-        if symbol in bought_coin_qty:
-            sell_rcpt = retry(exchange.create_market_sell_order, symbol, bought_coin_qty[symbol])
+
+        # get avaiable qty from exchange
+        qty = get_balance(symbol)
+
+        if qty is not None:
+            logger.info(f"{symbol} Balance retrived from exchange: {qty}")
+
+            if CHECK_MIN_NOTIONAL:
+                market = markets[symbol]
+
+                price = retry(exchange.fetchTicker, symbol)
+                if price is None:
+                    logger.error("f{symbol} Unable to sell: can't retrieve price for symbol")
+                    return
+
+                # check MIN_NOTIONAL
+                if qty * price['bid'] < market['limits']['cost']['min']:
+                    logger.error(f"{symbol} Order value is less than minimum allowed by exchange. Minimum: ${market['limits']['cost']['min']}. Qty: {qty}, Price: {price['bid']}, Owned total value: ${qty * price['bid']}")
+                    return
+
+            sell_rcpt = retry(exchange.create_market_sell_order, symbol, qty)
             if not sell_rcpt:
                 logger.error(f'{symbol} Failed to place sell order after all attempts exhausted..')
                 return
 
-            logger.info(f"{symbol} Sold {sell_rcpt['filled']}" )
-            bought_coin_qty.pop(symbol, None)
+            logger.info(f"{symbol} Sold {sell_rcpt['filled']}")
             
         else:
-            logger.error("Data missing: bought qty. Can't sell ")
+            logger.error("Data missing: qty. Can't sell.")
 
     
 async def ws_handler(uri):
-    ssl_context = ssl._create_unverified_context() # skips server certificate validation. note: this means connection can be MiTM 
+    ssl_context = ssl._create_unverified_context()
     async with websockets.connect(uri, ssl=ssl_context,extra_headers={"Authorization": f"{AUTHORIZATION}"}) as websocket:
         logger.info("Connected to server, waiting for signals...")
         while (True):
@@ -97,8 +119,6 @@ async def ws_handler(uri):
                             await place(False, o['t'])
                     else:
                         logger.error("Invalid message")
-                    
-                    save_status(bought_coin_qty)
 
             except TimeoutError:
                 await websocket.ping()
@@ -106,8 +126,10 @@ async def ws_handler(uri):
 
 if __name__ == "__main__":
     logger.info('Starting..')
-    bought_coin_qty = load_status()
-    exchange.fetch_ohlcv('BTC/USDT', '1m')
+
+    retry(exchange.fetch_ohlcv,'BTC/USDT', '1m')
+    if CHECK_MIN_NOTIONAL:
+        markets = retry(exchange.load_markets)
     
     while True:
         try:

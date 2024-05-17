@@ -50,26 +50,8 @@ if len(WS) == 0:
     
 logger.info(f'Configured symbols {config_symbols}')
 
-
-def load_status():
-    status_file = f'{output_path}/status.json'
-    try:
-        with open(status_file, 'r') as f:
-            return ujson.load(f)
-    except FileNotFoundError:
-        return {}
-
-def save_status(status):
-    status_file = f'{output_path}/status.json'
-    with open(status_file, 'w') as f:
-        ujson.dump(status, f)
-
-
 def check_stop_buy_file():
     return os.path.exists('stop.txt')
-
-def check_stop_buy_allow_dca_file():
-    return os.path.exists('stop_allow_dca.txt')
 
 def get_env_var_bool(name: str, default_value: bool | None = None) -> bool:
     true_ = ('true', '1', 't')
